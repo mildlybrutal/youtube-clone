@@ -1,6 +1,7 @@
 import React from "react";
 import { Home, Music, Trophy, Code, Film, ChevronRight } from "lucide-react";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
 const SidebarItem = ({ Icon, text }) => (
 	<li className="flex items-center space-x-4 p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200">
@@ -20,7 +21,7 @@ const Sidebar = () => {
 		<div className="w-64 bg-white shadow-lg p-4 h-screen sticky top-0 overflow-y-auto">
 			<nav>
 				<ul className="space-y-2">
-					<SidebarItem Icon={Home} text="Home" />
+					<Link to = "/"><SidebarItem Icon={Home} text="Home" /></Link>
 					<SidebarItem Icon={Music} text="Music" />
 					<SidebarItem Icon={Trophy} text="Sports" />
 					<SidebarItem Icon={Code} text="Coding" />
