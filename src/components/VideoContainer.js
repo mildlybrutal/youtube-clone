@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { YOUTUBE_VIDEOS_API } from "../utils/constants";
-import VideoCard from "./VideoCard";
+import VideoCard, { AdVideoCard } from "./VideoCard";
 import { Link } from "react-router-dom";
 
 const VideoContainer = () => {
@@ -43,9 +43,10 @@ const VideoContainer = () => {
 
 	return (
 		<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
+			<AdVideoCard info={videos[0]} />
 			{videos.map((video) => (
-				<Link to={"/watch?v=" + video.id} target="blank">
-					<VideoCard key={video.id} info={video} />
+				<Link key={video.id} to={"/watch?v=" + video.id} target="blank">
+					<VideoCard info={video} />
 				</Link>
 			))}
 		</div>
