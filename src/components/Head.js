@@ -1,13 +1,48 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Search, Menu, Mic, Video, Bell, User } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { toggleMenu } from "../utils/appSlice";
+import { YOUTUBE_SEARCH_API } from "../utils/constants";
 
 const Head = () => {
+	const [searchQuery, setSearchQuery] = useState("");
+	const [suggestions, setSuggestions] = useState([]);
+	const [showSuggestions, setShowSuggestions] = useState(false);
+
 	const dispatch = useDispatch();
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			if (searchQuery) {
+				getSuggestions();
+			} else {
+				setSuggestions([]);
+			}
+		}, 200);
+
+		return () => {
+			clearTimeout(timer);
+		};
+	}, [searchQuery]);
+
+	const getSuggestions = async () => {
+		try {
+			const response = await fetch(YOUTUBE_SEARCH_API + searchQuery);
+			const json = await response.json();
+			setSuggestions(json[1]);
+		} catch (error) {
+			console.error("Error fetching suggestions:", error);
+		}
+	};
+
 	const toggleMenuHandler = () => {
 		dispatch(toggleMenu());
+	};
+
+	const handleSuggestionClick = (suggestion) => {
+		setSearchQuery(suggestion);
+		setShowSuggestions(false);
 	};
 
 	return (
@@ -15,7 +50,7 @@ const Head = () => {
 			<div className="flex items-center">
 				<Menu
 					className="h-6 w-6 mr-4 cursor-pointer text-gray-700 hover:text-red-500 transition-colors duration-200"
-					onClick={() => toggleMenuHandler()}
+					onClick={toggleMenuHandler}
 				/>
 				<div className="flex items-center space-x-1">
 					<img
@@ -25,12 +60,16 @@ const Head = () => {
 					/>
 				</div>
 			</div>
-			<div className="flex items-center flex-grow justify-center max-w-3xl">
+			<div className="flex items-center flex-grow justify-center max-w-3xl relative">
 				<div className="flex w-full">
 					<input
 						type="text"
 						placeholder="Discover amazing content..."
 						className="w-full px-4 py-2 bg-gray-100 border-2 border-gray-300 rounded-l-full focus:outline-none focus:border-red-400 focus:bg-white transition-all duration-300"
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						onFocus={() => setShowSuggestions(true)}
+						onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
 					/>
 					<button className="px-6 py-2 bg-red-500 text-white rounded-r-full hover:bg-red-600 transition-colors duration-200">
 						<Search className="h-5 w-5" />
@@ -39,6 +78,19 @@ const Head = () => {
 				<button className="ml-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors duration-200">
 					<Mic className="h-5 w-5 text-gray-700" />
 				</button>
+				{showSuggestions && suggestions.length > 0 && (
+					<div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1">
+						{suggestions.map((suggestion, index) => (
+							<div
+								key={index}
+								className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+								onClick={() => handleSuggestionClick(suggestion)}
+							>
+								{suggestion}
+							</div>
+						))}
+					</div>
+				)}
 			</div>
 			<div className="flex items-center space-x-4">
 				<Video className="h-6 w-6 text-gray-700 hover:text-red-500 transition-colors duration-200 cursor-pointer" />
