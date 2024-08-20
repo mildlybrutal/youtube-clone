@@ -14,9 +14,27 @@ const Head = () => {
 	const searchCache = useSelector((store) => store.search);
 	const dispatch = useDispatch();
 
+	const getSuggestions = async (query) => {
+		console.log("Fetching suggestions for:", query);
+		try {
+			const response = await fetch(YOUTUBE_SEARCH_API + query);
+			const json = await response.json();
+			console.log("API response:", json);
+			setSuggestions(json[1]);
+			dispatch(
+				cacheResults({
+					[query]: json[1],
+				})
+			);
+		} catch (error) {
+			console.error("Error fetching suggestions:", error);
+		}
+	};
+
 	const debouncedGetSuggestions = useCallback(
 		debounce((query) => {
 			if (searchCache[query]) {
+				console.log("Using cached results for:", query);
 				setSuggestions(searchCache[query]);
 			} else {
 				getSuggestions(query);
@@ -32,21 +50,6 @@ const Head = () => {
 			setSuggestions([]);
 		}
 	}, [searchQuery, debouncedGetSuggestions]);
-
-	const getSuggestions = async (query) => {
-		try {
-			const response = await fetch(YOUTUBE_SEARCH_API + query);
-			const json = await response.json();
-			setSuggestions(json[1]);
-			dispatch(
-				cacheResults({
-					[query]: json[1],
-				})
-			);
-		} catch (error) {
-			console.error("Error fetching suggestions:", error);
-		}
-	};
 
 	const toggleMenuHandler = () => {
 		dispatch(toggleMenu());
@@ -70,6 +73,9 @@ const Head = () => {
 			handleSuggestionClick(suggestions[selectedSuggestionIndex]);
 		}
 	};
+
+	console.log("Current state:", { searchQuery, suggestions, showSuggestions });
+
 	return (
 		<div className="flex justify-between items-center p-3 mb-6 sticky top-0 bg-white shadow-md z-10">
 			<div className="flex items-center">
@@ -77,13 +83,11 @@ const Head = () => {
 					className="h-6 w-6 mr-4 cursor-pointer text-gray-700 hover:text-red-500 transition-colors duration-200"
 					onClick={toggleMenuHandler}
 				/>
-				<div className="flex items-center space-x-1">
-					<img
-						src="https://cdn.mos.cms.futurecdn.net/8gzcr6RpGStvZFA2qRt4v6-1200-80.jpg"
-						alt="Logo"
-						className="h-20 rounded-full"
-					/>
-				</div>
+				<img
+					src="https://cdn.mos.cms.futurecdn.net/8gzcr6RpGStvZFA2qRt4v6-1200-80.jpg"
+					alt="Logo"
+					className="h-20 rounded-full"
+				/>
 			</div>
 			<div className="flex items-center flex-grow justify-center max-w-3xl relative">
 				<div className="flex w-full">
@@ -134,7 +138,7 @@ const Head = () => {
 								className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
 							>
 								Your Channel
-							</a>
+							</a> 
 							<a
 								href="#"
 								className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
